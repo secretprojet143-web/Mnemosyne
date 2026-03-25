@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/logo.png" alt="Mnemosyne Logo" width="180" />
+  <img src="assets/header.jpg" alt="Mnemosyne" width="400" />
   <h1>Mnemosyne</h1>
   <p><em>The AI That Never Forgets</em></p>
 
@@ -26,6 +26,10 @@ This project is the technical realization of that idea: **an AI operating system
 ---
 
 ## Why This Exists
+
+<div align="center">
+  <img src="assets/logo.jpg" alt="Mnemosyne Leaf" width="220" />
+</div>
 
 Most AI assistants are stateless. You ask a question, get an answer, and the next conversation starts from zero. That's not intelligence - that's a search engine with a personality.
 

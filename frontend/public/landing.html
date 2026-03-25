@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mnemosyne — The AI That Learns</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--t50:#F0FDFD;--t100:#CCFBF1;--t200:#99F6E4;--t300:#5EEAD4;--t400:#2DD4BF;--t500:#14B8A6;--t600:#0D9488;--t700:#0F766E;--t800:#115E59;--t900:#134E4A;--t950:#042F2E}
+html{scroll-behavior:smooth}
+body{background:#010808;color:var(--t50);font-family:'Inter',sans-serif;overflow-x:hidden}
+
+.sbar{position:fixed;top:0;left:0;height:3px;z-index:9999;background:linear-gradient(90deg,var(--t600),var(--t400),var(--t300));width:0;transition:width .05s}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;background:rgba(1,8,8,.5);backdrop-filter:blur(20px);border-bottom:1px solid rgba(94,234,212,.04);transition:all .3s}
+nav.on{background:rgba(1,8,8,.95)}
+.logo{font-family:'Space Grotesk';font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--t400),var(--t600));-webkit-background-clip:text;background-clip:text;color:transparent}
+.nr{display:flex;gap:28px;align-items:center}
+.nr a{color:var(--t200);text-decoration:none;font-size:13px;font-weight:500}
+.nr a:hover{color:var(--t400)}
+.nbtn{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;background:var(--t600);color:#fff;border:none;cursor:pointer;transition:all .2s}
+.nbtn:hover{background:var(--t500);box-shadow:0 0 30px rgba(13,148,136,.5)}
+
+/* ══ ALL SECTIONS — shared perspective ══ */
+section{perspective:1000px;position:relative}
+
+/* ══ 3D OBJECT — shared ══ */
+.obj-3d{position:absolute;transform-style:preserve-3d;pointer-events:none}
+
+/* ══ HERO ══ */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 40px 80px}
+
+/* Torus */
+.torus{position:absolute;top:50%;left:50%;width:600px;height:600px;transform-style:preserve-3d;animation:tspin 25s linear infinite}
+.torus .seg{position:absolute;width:100%;height:100%;border:2px solid rgba(13,148,136,.1);border-radius:50%;transform-style:preserve-3d}
+.torus .seg:nth-child(1){transform:rotateX(70deg)}.torus .seg:nth-child(2){transform:rotateX(70deg) rotateY(30deg)}.torus .seg:nth-child(3){transform:rotateX(70deg) rotateY(60deg)}.torus .seg:nth-child(4){transform:rotateX(70deg) rotateY(90deg)}.torus .seg:nth-child(5){transform:rotateX(70deg) rotateY(120deg)}.torus .seg:nth-child(6){transform:rotateX(70deg) rotateY(150deg)}
+@keyframes tspin{0%{transform:translate(-50%,-50%) rotateX(15deg) rotateY(0)}100%{transform:translate(-50%,-50%) rotateX(15deg) rotateY(360deg)}}
+
+/* Cube */
+.cube{position:absolute;top:50%;left:50%;width:180px;height:180px;transform-style:preserve-3d;animation:cspin 15s linear infinite}
+.cube .f{position:absolute;width:180px;height:180px;border:1.5px solid rgba(20,184,166,.1);background:rgba(20,184,166,.015)}
+.cube .f:nth-child(1){transform:translateZ(90px)}.cube .f:nth-child(2){transform:rotateY(180deg) translateZ(90px)}.cube .f:nth-child(3){transform:rotateY(90deg) translateZ(90px)}.cube .f:nth-child(4){transform:rotateY(-90deg) translateZ(90px)}.cube .f:nth-child(5){transform:rotateX(90deg) translateZ(90px)}.cube .f:nth-child(6){transform:rotateX(-90deg) translateZ(90px)}
+@keyframes cspin{0%{transform:translate(-50%,-50%) rotateX(0) rotateY(0)}100%{transform:translate(-50%,-50%) rotateX(360deg) rotateY(360deg)}}
+
+/* Orbs */
+.gorb{position:absolute;border-radius:50%;filter:blur(80px)}
+.g1{width:500px;height:500px;background:rgba(13,148,136,.3);top:5%;left:-5%;animation:gf 8s ease-in-out infinite alternate}
+.g2{width:400px;height:400px;background:rgba(20,184,166,.2);bottom:0;right:-5%;animation:gf 10s ease-in-out infinite alternate-reverse}
+.g3{width:300px;height:300px;background:rgba(45,212,191,.15);top:40%;left:50%;animation:gf 12s ease-in-out infinite alternate}
+@keyframes gf{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(40px,-50px,100px) scale(1.2)}}
+
+.hero-badge{position:relative;z-index:2;display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:999px;background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.25);font-size:12px;font-weight:600;color:var(--t400);font-family:'JetBrains Mono';margin-bottom:36px;opacity:0;animation:up .8s ease .2s forwards}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--t400);animation:bl 2s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.2}}
+.hero h1{position:relative;z-index:2;font-family:'Space Grotesk';font-size:clamp(52px,9vw,110px);font-weight:900;line-height:.95;letter-spacing:-4px;margin-bottom:28px;opacity:0;animation:up .8s ease .3s forwards}
+.hero h1 .g{background:linear-gradient(135deg,var(--t200),var(--t400),var(--t300),var(--t500));background-size:300% 300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gs 5s ease infinite}
+@keyframes gs{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero>p{position:relative;z-index:2;font-size:clamp(16px,2vw,20px);color:var(--t200);max-width:600px;line-height:1.6;margin:0 auto 44px;opacity:0;animation:up .8s ease .4s forwards}
+.hbtns{position:relative;z-index:2;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;opacity:0;animation:up .8s ease .5s forwards}
+@keyframes up{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.bp{padding:16px 40px;border-radius:12px;font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--t600),var(--t500));color:#fff;border:none;cursor:pointer;box-shadow:0 4px 30px rgba(13,148,136,.4);transition:all .3s}
+.bp:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 8px 50px rgba(13,148,136,.6)}
+.bg2{padding:16px 40px;border-radius:12px;font-size:16px;font-weight:700;background:0 0;color:var(--t300);border:1px solid rgba(94,234,212,.2);cursor:pointer;transition:all .3s}
+.bg2:hover{background:rgba(94,234,212,.06);border-color:rgba(94,234,212,.4)}
+
+/* ══ 3D STAT CARDS ══ */
+.s3d{padding:100px 40px}
+.strk{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.scard{padding:36px 24px;border-radius:16px;text-align:center;background:rgba(4,47,46,.12);border:1px solid rgba(94,234,212,.06);transform:rotateX(8deg);transition:all .6s cubic-bezier(.16,1,.3,1);transform-style:preserve-3d;position:relative;overflow:visible}
+.scard:hover{transform:rotateX(0) translateZ(40px) scale(1.05);border-color:var(--t600);box-shadow:0 20px 60px rgba(13,148,136,.25)}
+/* 3D symbol behind each stat */
+.scard::before{content:'';position:absolute;top:-30px;right:-20px;width:80px;height:80px;border:2px solid rgba(13,148,136,.08);border-radius:50%;transform:rotateX(60deg);animation:ring-pulse 4s ease-in-out infinite}
+.scard:nth-child(2)::before{border-radius:0;transform:rotateX(60deg) rotate(45deg)}
+.scard:nth-child(3)::before{border-radius:50% 0;transform:rotateX(60deg) rotate(30deg)}
+.scard:nth-child(4)::before{border-radius:30%;transform:rotateX(60deg) rotate(15deg)}
+@keyframes ring-pulse{0%,100%{opacity:.3;transform:rotateX(60deg) scale(.8)}50%{opacity:.6;transform:rotateX(60deg) scale(1.1)}}
+.scard h3{font-family:'Space Grotesk';font-size:44px;font-weight:800;background:linear-gradient(135deg,var(--t300),var(--t500));-webkit-background-clip:text;background-clip:text;color:transparent}
+.scard p{font-size:13px;color:var(--t700);margin-top:8px;font-weight:500}
+
+/* ══ 3D FEATURES ══ */
+.f3d{padding:140px 40px}
+.sl{font-family:'JetBrains Mono';font-size:12px;font-weight:600;color:var(--t500);text-transform:uppercase;letter-spacing:3px;text-align:center;margin-bottom:16px}
+.st{font-family:'Space Grotesk';font-size:clamp(36px,5vw,56px);font-weight:800;text-align:center;margin-bottom:16px;letter-spacing:-2px}
+.ss{font-size:16px;color:var(--t200);text-align:center;max-width:550px;line-height:1.6;margin:0 auto 72px}
+.fg{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.fc{padding:40px 32px;border-radius:20px;background:rgba(4,47,46,.1);border:1px solid rgba(94,234,212,.06);transition:all .5s cubic-bezier(.16,1,.3,1);transform-style:preserve-3d;cursor:default;position:relative;overflow:visible}
+.fc:hover{transform:rotateY(-5deg) rotateX(3deg) translateZ(50px) scale(1.04);border-color:rgba(13,148,136,.35);box-shadow:0 24px 64px rgba(13,148,136,.2)}
+/* 3D orbit ring behind each feature card */
+.fc::after{content:'';position:absolute;top:-20px;right:-15px;width:70px;height:70px;border:1.5px solid rgba(13,148,136,.06);border-radius:50%;transform-style:preserve-3d;transform:rotateX(70deg);animation:orbit 6s linear infinite}
+.fc:nth-child(2)::after{animation-delay:-1s}
+.fc:nth-child(3)::after{animation-delay:-2s}
+.fc:nth-child(4)::after{animation-delay:-3s}
+.fc:nth-child(5)::after{animation-delay:-4s}
+.fc:nth-child(6)::after{animation-delay:-5s}
+@keyframes orbit{0%{transform:rotateX(70deg) rotateZ(0)}100%{transform:rotateX(70deg) rotateZ(360deg)}}
+.fi{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:24px;background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.15);transform:translateZ(10px)}
+.fc h3{font-family:'Space Grotesk';font-size:20px;font-weight:700;margin-bottom:10px}
+.fc p{font-size:14px;color:var(--t200);line-height:1.65}
+
+/* ══ CINEMATIC FRAMES — each with 3D objects ══ */
+.frame{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.frame .fcon{max-width:900px;padding:0 40px;position:relative;z-index:2;opacity:0;transform:translateZ(-200px) translateY(60px) scale(.9);transition:all 1s cubic-bezier(.16,1,.3,1);transform-style:preserve-3d}
+.frame.vis .fcon{opacity:1;transform:translateZ(0) translateY(0) scale(1)}
+.frame h2{font-family:'Space Grotesk';font-size:clamp(36px,6vw,64px);font-weight:900;letter-spacing:-3px;margin-bottom:16px}
+.frame p{font-size:18px;color:var(--t200);line-height:1.7;max-width:600px}
+
+/* Frame 1 — broken chain 3D */
+.f1-obj{position:absolute;transform-style:preserve-3d;animation:f1-spin 12s linear infinite}
+.f1-ring{width:150px;height:150px;border:2px solid rgba(239,68,68,.15);border-radius:50%;top:20%;right:10%;transform:rotateX(70deg)}
+.f1-cross{width:80px;height:80px;top:60%;left:8%;transform:rotateX(60deg) rotateY(45deg);border:2px solid rgba(239,68,68,.1)}
+.f1-diamond{width:60px;height:60px;bottom:20%;right:25%;transform:rotateX(45deg) rotateY(45deg);border:2px solid rgba(239,68,68,.08)}
+@keyframes f1-spin{0%{transform:rotateX(70deg) rotateZ(0)}100%{transform:rotateX(70deg) rotateZ(360deg)}}
+
+/* Frame 2 — memory nodes 3D */
+.f2-obj{position:absolute;transform-style:preserve-3d}
+.f2-node{width:40px;height:40px;border-radius:50%;border:2px solid rgba(13,148,136,.2);background:rgba(13,148,136,.05);animation:node-pulse 3s ease-in-out infinite}
+.f2-n1{top:15%;left:10%;animation-delay:0s}
+.f2-n2{top:25%;right:15%;animation-delay:.5s}
+.f2-n3{bottom:30%;left:20%;animation-delay:1s}
+.f2-n4{bottom:15%;right:10%;animation-delay:1.5s}
+.f2-n5{top:50%;left:5%;animation-delay:2s}
+.f2-n6{top:40%;right:8%;animation-delay:2.5s}
+/* Connection lines */
+.f2-line{position:absolute;height:1px;background:linear-gradient(90deg,rgba(13,148,136,.2),transparent);transform-origin:left center;animation:line-glow 4s ease-in-out infinite}
+.f2-l1{top:18%;left:12%;width:120px;transform:rotate(25deg);animation-delay:0s}
+.f2-l2{top:28%;right:18%;width:100px;transform:rotate(-15deg);animation-delay:1s}
+.f2-l3{bottom:33%;left:22%;width:80px;transform:rotate(40deg);animation-delay:2s}
+@keyframes node-pulse{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.3);opacity:.8}}
+@keyframes line-glow{0%,100%{opacity:.2}50%{opacity:.6}}
+
+/* Frame 3 — execution gears 3D */
+.f3-obj{position:absolute;transform-style:preserve-3d}
+.f3-gear{border-radius:50%;border:2px solid rgba(20,184,166,.15);animation:gear-spin 8s linear infinite}
+.f3-g1{width:120px;height:120px;top:15%;right:12%;border-style:dashed}
+.f3-g2{width:80px;height:80px;bottom:25%;left:8%;animation-direction:reverse;animation-duration:6s}
+.f3-g3{width:60px;height:60px;top:55%;right:20%;border-style:dotted;animation-duration:10s}
+.f3-arrow{position:absolute;width:100px;height:2px;background:linear-gradient(90deg,transparent,rgba(20,184,166,.2),transparent);animation:arrow-slide 3s ease-in-out infinite}
+.f3-a1{top:30%;left:15%;transform:rotate(20deg)}
+.f3-a2{bottom:35%;right:15%;transform:rotate(-10deg);animation-delay:1.5s}
+@keyframes gear-spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+@keyframes arrow-slide{0%,100%{opacity:0;transform:translateX(-20px)}50%{opacity:1;transform:translateX(20px)}}
+
+/* ══ HOW IT WORKS ══ */
+.h3d{padding:140px 40px}
+.ht{max-width:900px;margin:0 auto;position:relative}
+/* Vertical 3D pipe */
+.ht::before{content:'';position:absolute;left:31px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--t600),rgba(13,148,136,.05));transform:translateZ(10px)}
+.hs{display:flex;gap:32px;align-items:flex-start;margin-bottom:56px;transition:all .7s cubic-bezier(.16,1,.3,1);transform-style:preserve-3d}
+.hs:hover{transform:translateZ(30px) translateX(10px)}
+.hn{width:64px;height:64px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-size:24px;font-weight:800;background:linear-gradient(135deg,rgba(13,148,136,.25),rgba(13,148,136,.05));border:2px solid var(--t600);color:var(--t300);box-shadow:0 0 30px rgba(13,148,136,.2);position:relative;z-index:1}
+/* 3D ring around step numbers */
+.hn::after{content:'';position:absolute;inset:-12px;border:1px solid rgba(13,148,136,.08);border-radius:50%;transform:rotateX(60deg);animation:step-orbit 6s linear infinite}
+@keyframes step-orbit{0%{transform:rotateX(60deg) rotateZ(0)}100%{transform:rotateX(60deg) rotateZ(360deg)}}
+.hb h3{font-family:'Space Grotesk';font-size:24px;font-weight:700;margin-bottom:8px}
+.hb p{font-size:15px;color:var(--t200);line-height:1.6}
+
+/* ══ DEMO ══ */
+.d3d{padding:120px 40px}
+.term{max-width:850px;margin:0 auto;border-radius:20px;overflow:hidden;background:rgba(4,47,46,.15);border:1px solid rgba(94,234,212,.08);box-shadow:0 30px 100px rgba(0,0,0,.6);transform:rotateX(5deg) rotateY(-2deg);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.term:hover{transform:rotateX(0) rotateY(0) scale(1.02)}
+.th{padding:14px 18px;display:flex;gap:8px;background:rgba(4,47,46,.3);border-bottom:1px solid rgba(94,234,212,.05)}
+.td{width:11px;height:11px;border-radius:50%}
+.td:nth-child(1){background:#ef4444}.td:nth-child(2){background:#eab308}.td:nth-child(3){background:#22c55e}
+.tb{padding:32px;font-family:'JetBrains Mono';font-size:13px;line-height:2.4}
+.tl{opacity:0;animation:ti .4s ease forwards}
+.tl:nth-child(1){animation-delay:.5s}.tl:nth-child(2){animation-delay:1s}.tl:nth-child(3){animation-delay:1.5s}.tl:nth-child(4){animation-delay:2s}.tl:nth-child(5){animation-delay:2.5s}.tl:nth-child(6){animation-delay:3s}.tl:nth-child(7){animation-delay:3.5s}.tl:nth-child(8){animation-delay:4s}
+@keyframes ti{from{opacity:0;transform:translate3d(-10px,0,20px)}to{opacity:1;transform:translate3d(0,0,0)}}
+.tp{color:var(--t400)}.tr{color:var(--t200)}.thl{color:var(--t300);font-weight:700}.tm{color:var(--t700);font-size:11px}
+
+/* ══ CTA ══ */
+.cta{padding:140px 40px;text-align:center}
+.cta h2{font-family:'Space Grotesk';font-size:clamp(44px,7vw,72px);font-weight:900;letter-spacing:-3px;margin-bottom:20px}
+.cta p{font-size:18px;color:var(--t200);max-width:500px;margin:0 auto 44px;line-height:1.6}
+
+/* ══ SCROLL REVEAL ══ */
+.rv{opacity:0;transform:translateY(50px) rotateX(8deg);transition:all .9s cubic-bezier(.16,1,.3,1)}
+.rv.vis{opacity:1;transform:translateY(0) rotateX(0)}
+.rd1{transition-delay:.1s}.rd2{transition-delay:.2s}.rd3{transition-delay:.3s}
+
+/* ══ FLOATING 3D DEBRIS ══ */
+.deb{position:fixed;inset:0;pointer-events:none;z-index:0;perspective:600px;transform-style:preserve-3d}
+.dshape{position:absolute;border:1px solid rgba(13,148,136,.05);transform-style:preserve-3d}
+
+/* ══ GRID FLOOR ══ */
+.gfloor{position:fixed;bottom:-200px;left:-10%;right:-10%;height:600px;pointer-events:none;z-index:0;background:linear-gradient(rgba(13,148,136,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(13,148,136,.04) 1px,transparent 1px);background-size:60px 60px;transform:perspective(400px) rotateX(60deg);transform-origin:center bottom;opacity:.5}
+
+/* ══ SCROLL-DRIVEN 3D PARTICLES ══ */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--t500);opacity:.25;animation:pfloat linear infinite}
+@keyframes pfloat{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.25}90%{opacity:.25}100%{transform:translateY(-10vh) scale(1);opacity:0}}
+
+footer{padding:48px 40px;text-align:center;border-top:1px solid rgba(94,234,212,.04);font-size:13px;color:var(--t700)}
+footer a{color:var(--t500);text-decoration:none}
+@media(max-width:768px){.fg{grid-template-columns:1fr}.strk{grid-template-columns:repeat(2,1fr)}.torus,.cube{display:none}nav{padding:12px 20px}}
+</style>
+</head>
+<body>
+
+<div class="sbar" id="sb"></div>
+<div class="gfloor"></div>
+<div class="deb" id="deb"></div>
+<div class="particles" id="pts"></div>
+
+<nav id="nv"><div class="logo">Mnemosyne</div><div class="nr"><a href="#f">Features</a><a href="#h">How</a><a href="#d">Demo</a><button class="nbtn" onclick="location.href='http://localhost:8000'">Launch</button></div></nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="gorb g1"></div><div class="gorb g2"></div><div class="gorb g3"></div>
+  <div class="torus"><div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div></div>
+  <div class="cube"><div class="f"></div><div class="f"></div><div class="f"></div><div class="f"></div><div class="f"></div><div class="f"></div></div>
+  <div class="hero-badge">Self-Improving AI Agent</div>
+  <h1>The AI That<br><span class="g">Learns From You</span></h1>
+  <p>Not a chatbot. A system that remembers, plans, executes, and gets smarter with every interaction.</p>
+  <div class="hbtns"><button class="bp" onclick="location.href='http://localhost:8000'">Start Building</button><button class="bg2" onclick="document.getElementById('d').scrollIntoView({behavior:'smooth'})">See It Live</button></div>
+</section>
+
+<!-- ══ STATS ══ -->
+<section class="s3d">
+  <div class="strk">
+    <div class="scard rv"><h3>100%</h3><p>Persistent Memory</p></div>
+    <div class="scard rv rd1"><h3>∞</h3><p>Cross-Session Learning</p></div>
+    <div class="scard rv rd2"><h3>7</h3><p>Intelligence Layers</p></div>
+    <div class="scard rv rd3"><h3>0</h3><p>Lost Context</p></div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══ -->
+<section class="f3d" id="f">
+  <div class="rv"><div class="sl">Capabilities</div><div class="st">Built Different</div><div class="ss">Every feature feeds into one goal: an AI that genuinely improves over time.</div></div>
+  <div class="fg">
+    <div class="fc rv"><div class="fi">🧠</div><h3>Persistent Memory</h3><p>Remembers facts, preferences, context across every conversation. Never repeats onboarding.</p></div>
+    <div class="fc rv rd1"><div class="fi">⚡</div><h3>Autonomous Execution</h3><p>Creates plans, executes steps, handles failures, adapts strategies — while you watch.</p></div>
+    <div class="fc rv rd2"><div class="fi">🔮</div><h3>Predictive Intelligence</h3><p>Predicts failure risk before execution. Recommends proven solutions from past successes.</p></div>
+    <div class="fc rv rd1"><div class="fi">📈</div><h3>Self-Improving</h3><p>Learns from every execution. Tracks success rates, adapts strategies, grows more accurate.</p></div>
+    <div class="fc rv rd2"><div class="fi">🔁</div><h3>Feedback Loop</h3><p>Your feedback directly improves predictions. Human + AI co-learning in real time.</p></div>
+    <div class="fc rv rd3"><div class="fi">🌍</div><h3>Temporal Awareness</h3><p>Detects what changed, identifies stale facts, proactively suggests updates.</p></div>
+  </div>
+</section>
+
+<!-- ══ FRAME 1: THE PROBLEM — broken chain ══ -->
+<section class="frame">
+  <div class="f1-obj f1-ring"></div>
+  <div class="f1-obj f1-cross"></div>
+  <div class="f1-obj f1-diamond"></div>
+  <div class="fcon">
+    <div class="sl">The Problem</div>
+    <h2>Every AI Forgets</h2>
+    <p>You explain your project. Share preferences. Describe your workflow. Start a new conversation — it's all gone. Every AI starts from zero.</p>
+  </div>
+</section>
+
+<!-- ══ FRAME 2: THE SOLUTION — memory nodes ══ -->
+<section class="frame">
+  <div class="f2-obj f2-node f2-n1"></div>
+  <div class="f2-obj f2-node f2-n2"></div>
+  <div class="f2-obj f2-node f2-n3"></div>
+  <div class="f2-obj f2-node f2-n4"></div>
+  <div class="f2-obj f2-node f2-n5"></div>
+  <div class="f2-obj f2-node f2-n6"></div>
+  <div class="f2-obj f2-line f2-l1"></div>
+  <div class="f2-obj f2-line f2-l2"></div>
+  <div class="f2-obj f2-line f2-l3"></div>
+  <div class="fcon">
+    <div class="sl">The Solution</div>
+    <h2>Memory That<br>Never Resets</h2>
+    <p>Mnemosyne extracts facts, tracks projects, stores semantic memories, and builds a persistent model of who you are. Context survives every session.</p>
+  </div>
+</section>
+
+<!-- ══ FRAME 3: EXECUTION — gears ══ -->
+<section class="frame">
+  <div class="f3-obj f3-gear f3-g1"></div>
+  <div class="f3-obj f3-gear f3-g2"></div>
+  <div class="f3-obj f3-gear f3-g3"></div>
+  <div class="f3-obj f3-arrow f3-a1"></div>
+  <div class="f3-obj f3-arrow f3-a2"></div>
+  <div class="fcon">
+    <div class="sl">Beyond Memory</div>
+    <h2>It Doesn't Just Remember.<br>It Executes.</h2>
+    <p>Tell it to fix a bug. It creates a plan, assesses risk, predicts failures, recommends proven solutions, executes step by step, and learns from the outcome.</p>
+  </div>
+</section>
+
+<!-- ══ HOW IT WORKS ══ -->
+<section class="h3d" id="h">
+  <div class="rv"><div class="sl">Process</div><div class="st">How It Works</div><div class="ss">From a single message to autonomous execution.</div></div>
+  <div class="ht">
+    <div class="hs rv"><div class="hn">1</div><div class="hb"><h3>You Speak</h3><p>Send any message — question, task, goal. Mnemosyne classifies intent and loads the right context.</p></div></div>
+    <div class="hs rv rd1"><div class="hn">2</div><div class="hb"><h3>It Remembers</h3><p>Facts extracted, continuity tracked, semantic memories stored. Your context builds across sessions.</p></div></div>
+    <div class="hs rv rd2"><div class="hn">3</div><div class="hb"><h3>It Plans</h3><p>Complex tasks become step-by-step plans with dependencies, risk assessment, confidence scoring.</p></div></div>
+    <div class="hs rv rd3"><div class="hn">4</div><div class="hb"><h3>It Executes</h3><p>Steps run autonomously. Predictions warn of risk. Known solutions guide approach. Strategies adapt.</p></div></div>
+    <div class="hs rv"><div class="hn">5</div><div class="hb"><h3>It Learns</h3><p>Every execution feeds the learning system. Your feedback strengthens predictions. Patterns stored.</p></div></div>
+  </div>
+</section>
+
+<!-- ══ DEMO ══ -->
+<section class="d3d" id="d">
+  <div class="rv"><div class="sl">Live</div><div class="st">See It In Action</div><div class="ss">A real execution — with predictions, known solutions, step intelligence.</div></div>
+  <div class="term rv">
+    <div class="th"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+    <div class="tb">
+      <div class="tl tp">You: Start executing the login bug fix plan</div>
+      <div class="tl tm">↳ Intent: execute | Loading: Fix & Deploy Chatbot API</div>
+      <div class="tl tr"><br>⚠ <span class="thl">Prediction:</span> 42% failure rate (128 past executions)</div>
+      <div class="tl tr">💡 <span class="thl">Known Solution:</span> Refresh JWT secret + validate expiration (9x used)</div>
+      <div class="tl tr">🧠 <span class="thl">Adapted Strategy:</span> Full auth flow → regenerate tokens → validate OAuth</div>
+      <div class="tl tr"><br><span class="thl">Step 2:</span> Debug 401 Authentication Errors</div>
+      <div class="tl tm">Confidence: ●●●●○ 78% | Risk: 🟡 medium | 🧠 128 executions</div>
+      <div class="tl tr" style="margin-top:8px">→ Next: Inspect Authorization header and validate token</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="cta">
+  <div class="rv"><h2>Start Smarter<br>Today</h2><p>The more you use Mnemosyne, the better it works. That's not a tagline — it's the architecture.</p><div class="hbtns"><button class="bp" onclick="location.href='http://localhost:8000'">Launch Mnemosyne</button></div></div>
+</section>
+
+<footer><p>Mnemosyne — The AI that learns from experience. Built by <a href="#">Youness</a>.</p></footer>
+
+<script>
+// Scroll progress
+window.addEventListener('scroll',()=>{document.getElementById('sb').style.width=(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100+'%';document.getElementById('nv').classList.toggle('on',window.scrollY>50)});
+
+// Reveal
+const obs=new IntersectionObserver(e=>{e.forEach(n=>{if(n.isIntersecting)n.target.classList.add('vis')})},{threshold:.15,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('.rv,.frame').forEach(el=>obs.observe(el));
+
+// Floating 3D debris
+const deb=document.getElementById('deb');
+for(let i=0;i<25;i++){const d=document.createElement('div');d.className='dshape';const s=15+Math.random()*50;const ring=Math.random()>.5;d.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;border-radius:${ring?'50%':'0'};animation:df ${12+Math.random()*18}s linear infinite;animation-delay:${Math.random()*10}s;opacity:${.03+Math.random()*.04}`;deb.appendChild(d)}
+
+// Particles
+const pts=document.getElementById('pts');
+for(let i=0;i<40;i++){const p=document.createElement('div');p.className='particle';p.style.cssText=`left:${Math.random()*100}%;animation-duration:${8+Math.random()*14}s;animation-delay:${Math.random()*10}s;width:${2+Math.random()*3}px;height:${2+Math.random()*3}px`;pts.appendChild(p)}
+
+// Inject 3D debris animation
+const sty=document.createElement('style');
+sty.textContent=`@keyframes df{0%{transform:translate3d(0,0,0) rotateX(0) rotateY(0)}50%{transform:translate3d(${-40+Math.random()*80}px,${-60-Math.random()*80}px,${60+Math.random()*80}px) rotateX(180deg) rotateY(180deg)}100%{transform:translate3d(0,0,0) rotateX(360deg) rotateY(360deg)}}`;
+document.head.appendChild(sty);
+
+// Mouse parallax on hero
+document.querySelector('.hero').addEventListener('mousemove',e=>{
+  const cx=(e.clientX/window.innerWidth-.5);
+  const cy=(e.clientY/window.innerHeight-.5);
+  document.querySelectorAll('.gorb').forEach((o,i)=>{const f=(i+1)*15;o.style.transform=`translate3d(${cx*f}px,${cy*f}px,${i*30}px)`});
+  const t=document.querySelector('.torus');if(t)t.style.transform=`translate(-50%,-50%) rotateX(${15+cy*20}deg) rotateY(${cx*30}deg)`;
+  const c=document.querySelector('.cube');if(c)c.style.transform=`translate(-50%,-50%) rotateX(${cy*40}deg) rotateY(${cx*40}deg)`;
+});
+
+// Mouse parallax on 3D frames
+document.querySelectorAll('.frame').forEach(frame=>{
+  frame.addEventListener('mousemove',e=>{
+    const cx=(e.clientX/window.innerWidth-.5);
+    const cy=(e.clientY/window.innerHeight-.5);
+    frame.querySelectorAll('.f1-obj,.f2-obj,.f3-obj').forEach((o,i)=>{
+      const f=(i+1)*8;
+      o.style.transform=o.style.transform.replace(/translate3d\([^)]+\)/,'')+` translate3d(${cx*f}px,${cy*f}px,0)`;
+    });
+  });
+});
+
+// Scroll-driven depth
+window.addEventListener('scroll',()=>{
+  const sy=window.scrollY;
+  // Rotate torus faster on scroll
+  const t=document.querySelector('.torus');
+  if(t&&sy<window.innerHeight){t.style.animationDuration=Math.max(5,25-sy*.05)+'s'}
+});
+</script>
+</body>
+</html>

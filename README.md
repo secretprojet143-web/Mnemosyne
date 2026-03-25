@@ -1,5 +1,7 @@
 # Mnemosyne Full-Stack AI Dashboard
 
+> **LICENSE NOTICE**: This is a **source-available, NOT open-source** project. Viewing is permitted, but copying, redistribution, commercial use, and derivative works are **strictly prohibited** without written permission. See [LICENSE](LICENSE) for details.
+
 This project is a complete, real-world full-stack SaaS application for the Mnemosyne system. It features a stunning, cinematic React (Vite) frontend with glassmorphic design and a high-performance Python FastAPI backend.
 
 ## Prerequisites
